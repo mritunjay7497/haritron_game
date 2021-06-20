@@ -20,6 +20,7 @@ mongoose.connect(dbURI,{ useNewUrlParser: true,useUnifiedTopology: true, useFind
     .catch((err) => console.log(err));
 
 
+// User schema
 const userSchema = new mongoose.Schema({
     Name:{
         type:String,
