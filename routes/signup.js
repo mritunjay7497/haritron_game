@@ -2,7 +2,7 @@ const express = require('express');
 
 const jsonparser = require('body-parser').json();
 
-// sigup model
+// sign-up model
 const {userRegistration} = require('../models/signup');
 
 const signup = express.Router();
