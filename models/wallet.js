@@ -6,7 +6,6 @@ It is to be consumed by './router/wallet'
 const mongoose = require('mongoose');
 const dotnev = require('dotenv');
 const { userModel } = require('./signup');
-const lodash = require('lodash');
 const { toInteger } = require('lodash');
 
 dotnev.config()
@@ -36,9 +35,9 @@ const walletModel = new mongoose.model('wallet',walletSchema);
 
 
 // Create a user wallet
-async function createWallet(data){
+async function createWallet(user){
 
-    const userId = await userModel.findOne({username:data.username},{_id:1});
+    const userId = await userModel.findOne({username:user},{_id:1});
 
     let isWallet = await walletModel.findOne({userId:userId})
 
@@ -62,7 +61,7 @@ async function createWallet(data){
 // ADD money to the user wallet
 async function addMoney(data){
 
-    const username = data.username;
+    const username = data.user;
     const amount = data.amount;
 
     // get userId from username
@@ -87,12 +86,10 @@ async function addMoney(data){
 };
 
 // Get the current balance of a user
-async function getCurrentBalance(data){
-
-    const username = data.username;
+async function getCurrentBalance(user){
 
     // get userId from username
-    const userid = await userModel.findOne({username:username},{_id:1,password:0});
+    const userid = await userModel.findOne({username:user},{_id:1,password:0});
 
     const wallet = await walletModel.findOne({userId:userid},{_id:0,Balance:1});
 

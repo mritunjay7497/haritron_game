@@ -8,6 +8,12 @@ const authorize = require('../middleware/authenticate');
 const express = require('express');
 const jsonparser = require('body-parser').json();
 const {addMoney,getCurrentBalance,createWallet} = require('../models/wallet')
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const secret = process.env.secret;
 
 const walletRoute = express.Router();
 
@@ -20,7 +26,13 @@ The amount added to the wallet should be from the denominations objects
 
 // Create a user wallet
 walletRoute.post('/create',jsonparser,authorize,(req,res) => {
-    const userWallet = createWallet(req.body)
+
+    // Get username from JWT
+    const token = req.header('x-auth-token');
+    const payload = jwt.verify(token,secret);
+    const user = payload.username;
+
+    const userWallet = createWallet(user)
         .then((data) => res.send(data))
         .catch((err) => console.log(err))
 })
@@ -29,7 +41,12 @@ walletRoute.post('/create',jsonparser,authorize,(req,res) => {
 // Get current balance
 walletRoute.get('/',jsonparser,authorize,(req,res) => {
 
-    const currentBalance = getCurrentBalance(req.body)
+    // Get username from JWT
+    const token = req.header('x-auth-token');
+    const payload = jwt.verify(token,secret);
+    const user = payload.username;
+
+    const currentBalance = getCurrentBalance(user)
         .then((data) => res.send(`Current wallet balance is ${data} rs.`))
         .catch((err) => console.log(err));
     
@@ -38,9 +55,14 @@ walletRoute.get('/',jsonparser,authorize,(req,res) => {
 // Add money into the wallet
 walletRoute.post('/',jsonparser,authorize,(req,res) => {
 
-    if(denomination.includes(req.body.amount)){
+    // Get username from JWT
+    const token = req.header('x-auth-token');
+    const payload = jwt.verify(token,secret);
+    const user = payload.username;
 
-        const updatedBalance = addMoney(req.body)
+    if(denomination.includes(req.body.amount)){
+        const amount = req.body.amount;
+        const updatedBalance = addMoney({user,amount})
         .then((data) => res.send(`The updated wallet balance is ${data} rs.`))
         .catch((err) => console.log(err));
     } else{

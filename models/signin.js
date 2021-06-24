@@ -11,19 +11,24 @@ async function userLogin(data){
     let isRegistered = await userModel.findOne({username:data.username})
 
     if(isRegistered){
-        let username = data.username;
+        let msg = '';
         let hashedPassword = isRegistered.password;
         let password = data.password;
 
         const validPassword = await bcrypt.compare(password,hashedPassword)
         if(validPassword){
             const token = isRegistered.getAuthToken();
-            return token;
+            msg = 'Login successfull';
+            return {token,msg};
         } else{
-            return "Invalid username or password."
+            const token = null;
+            msg =  "Invalid username or password."
+            return {token,msg};
         }
     } else{
-        return "Invalid username or password."
+        msg =  "Invalid username or password.";
+        const token = null;
+        return {token,msg};
     }
 
 };

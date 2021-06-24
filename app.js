@@ -10,6 +10,9 @@ const signin = require('./routes/signin');
 // Wallet route
 const wallet = require('./routes/wallet')
 
+// Game play route
+const game = require('./routes/game')
+
 // load .env into process environment variables
 dotenv.config()
 
@@ -24,6 +27,9 @@ app.use('/api/signin',signin);
 
 // wallet route
 app.use('/api/wallet',wallet);
+
+// game-paly route
+app.use('/api/game',game);
 
 // PORT from env file
 const port = process.env.PORT || 3000;
