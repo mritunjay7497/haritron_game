@@ -60,13 +60,10 @@ game.get('/',jsonparser,authorize,(req,res) => {
             // Return ZERO after every 10-15 round 
             if (initialRound<roundLimit) {
     
-                // Get the number selected by the system
-                async function getNumber(){
-                    return await luckyNumber();
-                }
-    
-                const number = getNumber();
-                console.log(number)
+                // Get the number selected by the system    
+                const number = await luckyNumber();
+                console.log("lucky number is",number)
+                console.log("initialRound,RoundLimit",initialRound,roundLimit)
     
     
                 // Check if the number selcted by the system belongs to any of the number selected by user
@@ -75,18 +72,18 @@ game.get('/',jsonparser,authorize,(req,res) => {
                 if(req.body.num1 === number.num1 || req.body.num2 === number.num1){
     
                     const amount = betAmount/2;         // Adding 50% of bet amount
-                    const updateWalletBalance = addMoney(user,amount);
+                    const updateWalletBalance =   addMoney({user,amount});
                     initialRound+=1;
     
                 } else if(req.body.num1 === number.num2 || req.body.num2 === number.num2){
     
                     const amount = betAmount*0.3;       // Adding 30% of bet value
-                    const updateWalletBalance = addMoney(user,amount);
+                    const updateWalletBalance =   addMoney({user,amount});
                     initialRound+=1;
     
                 } else if(req.body.num1 !== number.num1 && req.body.num1 !== number.num1 && req.body.num2 !== number.num1 && req.body.num2 !== number.num2){
                     const amount = betAmount*0.1        // Adding 10% of the bet value
-                    const updateWalletBalance = addMoney(user,amount);
+                    const updateWalletBalance =  addMoney({user,amount})
                     initialRound+=1;
                 }
                 
@@ -94,11 +91,11 @@ game.get('/',jsonparser,authorize,(req,res) => {
                 number = 0;
                 if(req.body.num1 === number){
                     const amount = betAmount*0.6        // Adding 60% of the bet value if user selects Zero
-                    const updateWalletBalance = addMoney(user,amount)
+                    const updateWalletBalance =   addMoney({user,amount})
                     initialRound = 1;                   // reset the round
                 }else{
                     const amount = 0;
-                    const updateWalletBalance = addMoney(user,amount);      // Add 0 if user selects 0 and it's not there
+                    const updateWalletBalance =  addMoney({user,amount});      // Add 0 if user selects 0 and it's not there
                     initialRound = 1;
                 }
             }
@@ -119,7 +116,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
     const walletBalance = balance(user)
         .then((amount) => {
             const game = gamePlay(betAmount,amount)
-                .then((data) => console.log(data))
+                .then((data) => console.log("data is:", data))
                 .catch((err) => console.log(err));
         })
         .catch((err) => console.log(err));
