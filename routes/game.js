@@ -101,7 +101,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
             }
     
             // Get updated wallet balance after every round
-            async function updatedBalance(){
+            async function updatedBalance(user){
                 return await getCurrentBalance(user)
             };
             return(updatedBalance());
