@@ -96,7 +96,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
 
             .then((amount) => addMoney({user,amount}))
             .then((balance) => {
-                if(data>0){
+                if(balance>0){
                     res.send(`The updated wallet balance is ${balance}`)
                 } else{
                     res.send("insufficient balance in the wallet. Please top-up yout wallet to continue placing bet.")
