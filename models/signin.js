@@ -8,7 +8,8 @@ const {userModel} = require('./signup');
 const bcrypt = require('bcrypt');
 
 async function userLogin(data){
-    let isRegistered = await userModel.findOne({username:data.username})
+    let username = data.username;
+    let isRegistered = await userModel.findOne({username:username})
 
     if(isRegistered){
         let msg = '';

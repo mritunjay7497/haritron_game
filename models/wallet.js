@@ -24,9 +24,9 @@ const walletSchema = new mongoose.Schema({
         ref:'Registered_User'
     },
     Balance:{
-        type:Number,
         required:true,
-        default:0
+        default:0,
+        type:Number
     }
 });
 

@@ -93,8 +93,8 @@ game.get('/',jsonparser,authorize,(req,res) => {
             })
 
             .then((amount) => addMoney({user,amount}))
+            .then((data) => res.send(`The updated wallet balance is ${data}`))
             .catch((err) => console.log(err));
-
 
     }
 
