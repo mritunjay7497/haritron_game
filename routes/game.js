@@ -7,7 +7,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const authorize = require('../middleware/authenticate');
 const jsonparser = bodyparser.json();
-const {luckyNumber} = require('../models/gameLogic');
+const luckyNumber = require('../models/gameLogic');
 const {getCurrentBalance,addMoney} = require('../models/wallet');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -34,13 +34,15 @@ game.get('/',jsonparser,authorize,(req,res) => {
     const user = payload.username;
 
     let currentBalance = 0;
+    let systemNumber = luckyNumber();
 
     // Check if both numbers supplied by the user are non-zero and lie b/w 1-9
     
     let firstUserNumber = req.body.num1;
     let secondUserNumber = req.body.num2;
     let betAmount = req.body.bettingAmount;
-    let {firstLuckyNumber,secondLuckyNumber} = {luckyNumber};
+    let firstLuckyNumber = systemNumber.num1;
+    let secondLuckyNumber = systemNumber.num2;
     let awardAmount = 0;
 
     if(0<firstUserNumber<=9 && 0<secondUserNumber<=9){
@@ -61,23 +63,19 @@ game.get('/',jsonparser,authorize,(req,res) => {
             .then(() => {
                 // aloow betting if current balance is more than or equal to the betting amount
                 if(currentBalance>=betAmount){
-                    console.log("placing bet...")
                     // Betting award logic
                     // if either of the number selected by user ends up in the first place as the number selected by the system
 
                     if(firstUserNumber === firstLuckyNumber || secondUserNumber === firstLuckyNumber){
-                        awardAmount = betAmount/2   // award is 50% of bet amount
-                        console.log("bet Amount 1: ",betAmount);
+                        return awardAmount = betAmount/2   // award is 50% of bet amount
                     }
 
                     else if(firstUserNumber === secondLuckyNumber || secondUserNumber === secondLuckyNumber){
-                        awardAmount = (betAmount)*(0.3);    // award is 30% of the bet amount
-                        console.log("bet amount2: ",betAmount)
+                        return awardAmount = (betAmount)*(0.3);    // award is 30% of the bet amount
                     } 
 
                     else if(firstUserNumber !== firstLuckyNumber && firstUserNumber !== secondLuckyNumber && secondUserNumber !== firstLuckyNumber && secondUserNumber !== secondUserNumber){
-                        awardAmount = (betAmount)*(0.1);    // award is 10% of the bet amount
-                        console.log("bet amount3: ",betAmount)
+                        return awardAmount = (betAmount)*(0.1);    // award is 10% of the bet amount
                     } 
                     
                     else if(firstUserNumber === 0 || secondUserNumber === 0){
@@ -85,8 +83,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
                         secondUserNumber = null;
 
                         if(firstUserNumber === firstLuckyNumber || firstUserNumber === secondLuckyNumber){
-                            awardAmount = (betAmount)*0.6   // award is 60% of the bet amount
-                            console.log("bet amount3: ",betAmount);
+                            return awardAmount = (betAmount)*0.6   // award is 60% of the bet amount
                         }
                     }
                 } 
@@ -95,7 +92,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
                 }
             })
 
-            .then(console.log(awardAmount))
+            .then((amount) => addMoney({user,amount}))
             .catch((err) => console.log(err));
 
 
