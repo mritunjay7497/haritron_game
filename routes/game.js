@@ -85,6 +85,8 @@ game.get('/',jsonparser,authorize,(req,res) => {
                         if(firstUserNumber === firstLuckyNumber || firstUserNumber === secondLuckyNumber){
                             return awardAmount = (betAmount)*0.6   // award is 60% of the bet amount
                         }
+                    } else {
+                        return awardAmount = (betAmount)*(-1)
                     }
                 } 
                 else {
