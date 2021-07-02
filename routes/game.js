@@ -90,12 +90,18 @@ game.get('/',jsonparser,authorize,(req,res) => {
                     }
                 } 
                 else {
-                    console.log( "insufficient balance in the wallet. Please top-up yout wallet to continue placing bet.")
+                    return 
                 }
             })
 
             .then((amount) => addMoney({user,amount}))
-            .then((data) => res.send(`The updated wallet balance is ${data}`))
+            .then((balance) => {
+                if(data>0){
+                    res.send(`The updated wallet balance is ${balance}`)
+                } else{
+                    res.send("insufficient balance in the wallet. Please top-up yout wallet to continue placing bet.")
+                }
+            })
             .catch((err) => console.log(err));
 
     }
