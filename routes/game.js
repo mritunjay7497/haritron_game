@@ -18,112 +18,91 @@ const secret = process.env.secret;
 
 const game = express.Router();
 
-let initialRound = 1
-const roundLimit = Math.floor(Math.random()*(15-10+1)+10);
-
+// let initialRound = 1
+// const roundLimit = Math.floor(Math.random()*(15-10+1)+10);
 
 game.get('/',jsonparser,authorize,(req,res) => {
 
     /*
     This part gets two numbers, num1 & num2, from request body.
     It also needs the betting amount value from request body.
-    */
+   */
 
-    // Get username from JWT
+    // Get user name from JWT
     const token = req.header('x-auth-token');
     const payload = jwt.verify(token,secret);
     const user = payload.username;
 
-    if(req.body.num1 !== 0 && req.body.num2 !== 0){
-        const num1 = toInteger(req.body.num1);
-        const num2 = toInteger(req.body.num2);
-    } else{
-        req.body.num1 = 0;
-        req.body.num2 = null;
-    }
-    
-    const betAmount = toInteger(req.body.bettingAmount);
+    let currentBalance = 0;
 
-    // Get the current balance of the user before placing bet
+    // Check if both numbers supplied by the user are non-zero and lie b/w 1-9
+    
+    let firstUserNumber = req.body.num1;
+    let secondUserNumber = req.body.num2;
+    let betAmount = req.body.bettingAmount;
+    let {firstLuckyNumber,secondLuckyNumber} = {luckyNumber};
+    let awardAmount = 0;
 
-    async function balance(user){
-        let walletBalance = await getCurrentBalance(user)
-        return walletBalance;
-    }
-   
-    async function gamePlay(betAmount,walletBalance){
+    if(0<firstUserNumber<=9 && 0<secondUserNumber<=9){
 
-        if(0<betAmount<=walletBalance){
+        // conver numbers entered by user to an integer
+        firstUserNumber = toInteger(firstUserNumber);
+        secondUserNumber = toInteger(secondUserNumber);
 
-            let number = 0;
-            
-            // Return ZERO after every 10-15 round 
-            if (initialRound<roundLimit) {
-    
-                // Get the number selected by the system    
-                const number = await luckyNumber();
-                console.log("lucky number is",number)
-                console.log("initialRound,RoundLimit",initialRound,roundLimit)
-    
-    
-                // Check if the number selcted by the system belongs to any of the number selected by user
-                // If the number is in the first place,add 50% extra of the bet value
-    
-                if(req.body.num1 === number.num1 || req.body.num2 === number.num1){
-    
-                    const amount = betAmount/2;         // Adding 50% of bet amount
-                    const updateWalletBalance =   addMoney({user,amount});
-                    initialRound+=1;
-    
-                } else if(req.body.num1 === number.num2 || req.body.num2 === number.num2){
-    
-                    const amount = betAmount*0.3;       // Adding 30% of bet value
-                    const updateWalletBalance =   addMoney({user,amount});
-                    initialRound+=1;
-    
-                } else if(req.body.num1 !== number.num1 && req.body.num1 !== number.num1 && req.body.num2 !== number.num1 && req.body.num2 !== number.num2){
-                    const amount = betAmount*0.1        // Adding 10% of the bet value
-                    const updateWalletBalance =  addMoney({user,amount})
-                    initialRound+=1;
+        // convert bet amount to integer
+        betAmount = toInteger(betAmount);
+        
+
+        // Get current balance of user before placing bet
+        getCurrentBalance(user)
+
+            .then((balance) => currentBalance = balance)
+
+            .then(async function(currentBalance,betAmount){
+                // aloow betting if current balance is more than or equal to the betting amount
+                console.log(currentBalance,betAmount,"params");
+                if(currentBalance>=betAmount){
+                    console.log("placing bet...")
+                    // Betting award logic
+                    // if either of the number selected by user ends up in the first place as the number selected by the system
+
+                    if(firstUserNumber === firstLuckyNumber || secondUserNumber === firstLuckyNumber){
+                        awardAmount = await betAmount/2   // award is 50% of bet amount
+                        console.log("bet Amount 1: ",betAmount);
+                    }
+
+                    else if(firstUserNumber === secondLuckyNumber || secondUserNumber === secondLuckyNumber){
+                        awardAmount = await (betAmount)*(0.3);    // award is 30% of the bet amount
+                        console.log("bet amount2: ",betAmount)
+                    } 
+
+                    else if(firstUserNumber !== firstLuckyNumber && firstUserNumber !== secondLuckyNumber && secondUserNumber !== firstLuckyNumber && secondUserNumber !== secondUserNumber){
+                        awardAmount = await (betAmount)*(0.1);    // award is 10% of the bet amount
+                        console.log("bet amount3: ",betAmount)
+                    } 
+                    
+                    else if(firstUserNumber === 0 || secondUserNumber === 0){
+                        firstUserNumber = 0;
+                        secondUserNumber = null;
+
+                        if(firstUserNumber === firstLuckyNumber || firstUserNumber === secondLuckyNumber){
+                            awardAmount = await (betAmount)*0.6   // award is 60% of the bet amount
+                            console.log("bet amount3: ",betAmount);
+                        }
+                    }
+                } 
+                else {
+                    console.log( "insufficient balance in the wallet. Please top-up yout wallet to continue placing bet.")
                 }
-                
-            } else {
-                number = 0;
-                if(req.body.num1 === number){
-                    const amount = betAmount*0.6        // Adding 60% of the bet value if user selects Zero
-                    const updateWalletBalance =   addMoney({user,amount})
-                    initialRound = 1;                   // reset the round
-                }else{
-                    const amount = 0;
-                    const updateWalletBalance =  addMoney({user,amount});      // Add 0 if user selects 0 and it's not there
-                    initialRound = 1;
-                }
-            }
-    
-            // Get updated wallet balance after every round
-            async function updatedBalance(user){
-                return await getCurrentBalance(user)
-            };
-            return(updatedBalance());
-    
-        } else {
-            return("Insufficient amount in the wallet.\nPlease top-up your wallet to continue placing bet")
-        }
+            })
+
+            .then(console.log(awardAmount))
+            .catch((err) => console.log(err));
+
 
     }
 
 
-    const walletBalance = balance(user)
-        .then((amount) => {
-            const game = gamePlay(betAmount,amount)
-                .then((data) => console.log("data is:", data))
-                .catch((err) => console.log(err));
-        })
-        .catch((err) => console.log(err));
-    
-
-
-    
 });
 
 module.exports = game;
