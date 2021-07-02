@@ -58,26 +58,25 @@ game.get('/',jsonparser,authorize,(req,res) => {
 
             .then((balance) => currentBalance = balance)
 
-            .then(async function(currentBalance,betAmount){
+            .then(() => {
                 // aloow betting if current balance is more than or equal to the betting amount
-                console.log(currentBalance,betAmount,"params");
                 if(currentBalance>=betAmount){
                     console.log("placing bet...")
                     // Betting award logic
                     // if either of the number selected by user ends up in the first place as the number selected by the system
 
                     if(firstUserNumber === firstLuckyNumber || secondUserNumber === firstLuckyNumber){
-                        awardAmount = await betAmount/2   // award is 50% of bet amount
+                        awardAmount = betAmount/2   // award is 50% of bet amount
                         console.log("bet Amount 1: ",betAmount);
                     }
 
                     else if(firstUserNumber === secondLuckyNumber || secondUserNumber === secondLuckyNumber){
-                        awardAmount = await (betAmount)*(0.3);    // award is 30% of the bet amount
+                        awardAmount = (betAmount)*(0.3);    // award is 30% of the bet amount
                         console.log("bet amount2: ",betAmount)
                     } 
 
                     else if(firstUserNumber !== firstLuckyNumber && firstUserNumber !== secondLuckyNumber && secondUserNumber !== firstLuckyNumber && secondUserNumber !== secondUserNumber){
-                        awardAmount = await (betAmount)*(0.1);    // award is 10% of the bet amount
+                        awardAmount = (betAmount)*(0.1);    // award is 10% of the bet amount
                         console.log("bet amount3: ",betAmount)
                     } 
                     
@@ -86,7 +85,7 @@ game.get('/',jsonparser,authorize,(req,res) => {
                         secondUserNumber = null;
 
                         if(firstUserNumber === firstLuckyNumber || firstUserNumber === secondLuckyNumber){
-                            awardAmount = await (betAmount)*0.6   // award is 60% of the bet amount
+                            awardAmount = (betAmount)*0.6   // award is 60% of the bet amount
                             console.log("bet amount3: ",betAmount);
                         }
                     }
